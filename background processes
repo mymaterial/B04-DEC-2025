@@ -1,0 +1,78 @@
+/usr/pgsql-18/bin/postgres -D /u01/pgsql/18
+
+	- connection establishment
+	- take care of other background processes
+	- instance recovery
+
+postgres: walwriter
+	
+	- writes information from wal buffers to wal files
+	- on every commit.
+
+postgres: background writer
+
+	- writes information from shared buffers to datafile files
+	- on every #bgwriter_delay = 200ms duration
+	- everytime it writes, it takes	#bgwriter_lru_maxpages = 100 amount of buffers
+	
+postgres: checkpointer
+
+	- ensures your dirty buffers are written to disk
+	- checkpoint_timeout = 5m time 
+
+postgres: logger
+
+	- writes event information to alert log file
+
+# REPORTING AND LOGGING
+
+
+# - Where to Log - Where do you want my alert log to go?
+
+log_destination = 'stderr'
+logging_collector = on 
+log_directory = 'log'  [or] log_directory = '/u01/logs' 
+log_filename = 'postgresql-%a.log'  [or] log_filename = 'postgresql-%d-%m-%y.log'
+
+# - When to Log - How much information you want?
+
+#log_min_messages = warning             # values in order of decreasing detail:
+                                        #   debug5
+                                        #   debug4
+                                        #   debug3
+                                        #   debug2
+                                        #   debug1
+                                        #   info
+                                        #   notice
+                                        #   warning
+                                        #   error
+                                        #   log
+                                        #   fatal
+										#   panic
+
+# - What to Log - What kind of information you want (Recommendations: pgbadger)?
+
+#log_checkpoints = on
+#log_connections = ''
+#log_disconnections = off
+#log_duration = off 
+#log_min_duration_statement = 5s
+
+log_line_prefix = '%m [%p] '           
+2026-01-03 08:20:11.754 IST [2429] LOG:  statement: select * from emp;
+
+log_line_prefix = '%t [%p]: db=%d,user=%u,app=%a,client=%h '
+2026-01-03 08:21:34 IST [2466]: db=postgres,user=postgres,app=psql,client=[local] LOG:  statement: select * from emp;
+
+Rotation example.,
+-------------------
+find . -name ".zip" -mtime +90days {rm -rf}
+find . -name ".log" -mtime +5days {gzip *}
+
+postgres: autovacuum launcher
+
+postgres: io worker 0
+postgres: io worker 2
+postgres: io worker 1
+
+
