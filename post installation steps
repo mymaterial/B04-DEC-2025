@@ -1,0 +1,66 @@
+post installation steps
+------------------------
+1. set password for postgres user
+postgres=# \password
+Enter new password for user "postgres":
+Enter it again:
+postgres=#
+
+2. enable external connectivity
+-----------------------------------
+
+1. listen_address='*'  #postgresql.conf
+
+postgres@lab01 ~]$ psql -h 192.168.33.128
+psql: error: connection to server at "192.168.33.128", port 5432 failed: Connection refused
+        Is the server running on that host and accepting TCP/IP connections?
+
+
+2. host all	all 0.0.0.0/0 md5 #pg_hba.conf
+[postgres@lab01 ~]$ psql -h 192.168.33.128
+psql: error: connection to server at "192.168.33.128", port 5432 failed: Connection refused
+        Is the server running on that host and accepting TCP/IP connections?
+
+3. disable firewall or enable 5432 port
+unable to connect to server
+connection timeout expired
+
+systemctl stop firewalld  
+
+(or)
+
+firewall-cmd --zone=public --add-port=5432/tcp --permanent
+firewall-cmd --reload
+
+
+3. set parameters as per pgtune
+
+# DB Version: 18
+# OS Type: linux
+# DB Type: oltp
+# Total Memory (RAM): 16 GB
+# CPUs num: 8
+# Connections num: 250
+# Data Storage: ssd
+
+max_connections = 250
+shared_buffers = 4GB
+effective_cache_size = 12GB
+maintenance_work_mem = 1GB
+checkpoint_completion_target = 0.9
+wal_buffers = 16MB
+default_statistics_target = 100
+
+random_page_cost = 1.1
+effective_io_concurrency = 200
+
+work_mem = 16256kB
+huge_pages = off
+
+min_wal_size = 2GB
+max_wal_size = 8GB
+
+max_worker_processes = 8
+max_parallel_workers_per_gather = 4
+max_parallel_workers = 8
+max_parallel_maintenance_workers = 4
